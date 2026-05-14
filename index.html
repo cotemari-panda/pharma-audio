@@ -1,3 +1,410 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>くすり音読 — 薬剤師のための記事音声要約</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --accent: #7eb8d4;
+    --accent2: #a8d8b0;
+    --text: #e8eaf0;
+    --text-muted: #8890a8;
+    --border: #2e3348;
+    --pill: #1e2235;
+    --danger: #e07a7a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ─── Header ─── */
+  header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+  }
+
+  .logo-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .logo-text h1 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+  }
+
+  .logo-text p {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* ─── Main ─── */
+  main { padding: 24px 16px; max-width: 640px; margin: 0 auto; }
+
+  /* ─── Card ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .card-label {
+    font-size: 0.72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  /* ─── Tab Switcher ─── */
+  .tab-switcher {
+    display: flex;
+    margin: -20px -20px 16px;
+    border-bottom: 1px solid var(--border);
+    border-radius: 16px 16px 0 0;
+    overflow: hidden;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 13px 10px;
+    border: none;
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .tab:first-child {
+    border-right: 1px solid var(--border);
+    border-radius: 16px 0 0 0;
+  }
+
+  .tab:last-child { border-radius: 0 16px 0 0; }
+
+  .tab.tab-active {
+    background: var(--surface2);
+    color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ─── URL Input ─── */
+  .url-input-wrap {
+    display: flex;
+    gap: 8px;
+  }
+
+  input[type="url"], input[type="text"] {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  input[type="url"]:focus, input[type="text"]:focus { border-color: var(--accent); }
+  input[type="url"]::placeholder, input[type="text"]::placeholder { color: var(--text-muted); }
+
+  /* ─── Textarea ─── */
+  .text-paste-area {
+    width: 100%;
+    min-height: 160px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.82rem;
+    line-height: 1.75;
+    outline: none;
+    resize: vertical;
+    transition: border-color .2s;
+  }
+
+  .text-paste-area:focus { border-color: var(--accent); }
+  .text-paste-area::placeholder { color: var(--text-muted); }
+
+  .text-hint {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-top: 8px;
+    line-height: 1.5;
+  }
+
+  /* ─── Buttons ─── */
+  .btn-go {
+    background: linear-gradient(135deg, var(--accent), #5a9fc0);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    color: #fff;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity .2s, transform .1s;
+  }
+
+  .btn-go:active { transform: scale(.97); }
+  .btn-go:disabled { opacity: .4; cursor: not-allowed; }
+
+  .btn-go-full {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--accent), #5a9fc0);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+  }
+
+  .btn-go-full:active { transform: scale(.98); }
+  .btn-go-full:disabled { opacity: .4; cursor: not-allowed; }
+
+  .source-tags {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
+  }
+
+  .tag {
+    background: var(--pill);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── Share Button ─── */
+  .btn-share {
+    display: none;
+    width: 100%;
+    margin-bottom: 16px;
+    padding: 13px;
+    background: linear-gradient(135deg, rgba(126,184,212,.12), rgba(168,216,176,.12));
+    border: 1px solid rgba(126,184,212,.4);
+    border-radius: 12px;
+    color: var(--accent);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .2s;
+  }
+
+  .btn-share:hover { border-color: var(--accent); background: rgba(126,184,212,.2); }
+
+  /* ─── Share Card ─── */
+  .share-url-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 0.75rem;
+    font-family: monospace;
+    outline: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .share-note {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+    line-height: 1.6;
+  }
+
+  /* ─── Offline Card ─── */
+  .offline-card {
+    background: rgba(168,216,176,.06);
+    border: 1px solid rgba(168,216,176,.3);
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 16px;
+  }
+
+  .offline-card .card-label { color: var(--accent2); }
+
+  .offline-title {
+    font-size: 0.85rem;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .btn-offline {
+    padding: 10px 18px;
+    background: linear-gradient(135deg, var(--accent2), #6dbf88);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+
+  .offline-badge {
+    display: none;
+    background: rgba(168,216,176,.12);
+    border: 1px solid rgba(168,216,176,.35);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.68rem;
+    color: var(--accent2);
+    margin-top: 10px;
+  }
+
+  /* ─── Progress ─── */
+  #progressWrap {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .progress-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    transition: color .3s;
+  }
+
+  .progress-step.active { color: var(--accent); }
+  .progress-step.done { color: var(--accent2); }
+
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background .3s;
+  }
+
+  .progress-step.active .step-dot { background: var(--accent); animation: pulse 1s infinite; }
+  .progress-step.done .step-dot { background: var(--accent2); }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:.3; }
+  }
+
+  /* ─── Result Card ─── */
+  #resultCard {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .result-header {
+    padding: 16px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+
+  .result-header h2 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .result-body { padding: 20px; }
+
+  #summaryText {
+    font-size: 0.88rem;
+    line-height: 1.9;
+    color: #c8ccd8;
+    white-space: pre-wrap;
+  }
+
+  /* ─── Audio Player ─── */
+  #playerCard {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .player-label {
+    font-size: 0.72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 14px;
+  }
+
+  .player-controls {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .btn-play {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), #6dbf88);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: transform .15s;
+  }
 
   .btn-play:active { transform: scale(.93); }
 
@@ -160,9 +567,23 @@
     cursor: pointer;
   }
 
+  /* ─── Shared view banner ─── */
+  .shared-banner {
+    display: none;
+    background: rgba(168,216,176,.08);
+    border: 1px solid rgba(168,216,176,.35);
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: var(--accent2);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
   @media (max-width: 400px) {
     .url-input-wrap { flex-direction: column; }
     .btn-go { width: 100%; }
+    .tab { font-size: 0.76rem; padding: 12px 6px; }
   }
 </style>
 </head>
@@ -178,6 +599,18 @@
 
 <main>
 
+  <!-- Shared view banner -->
+  <div id="sharedBanner" class="shared-banner">
+    📤 共有された要約です。下のプレイヤーで音声再生できます。
+  </div>
+
+  <!-- Offline Card -->
+  <div id="offlineCard" class="offline-card" style="display:none">
+    <div class="card-label">📱 オフライン保存済み</div>
+    <div id="offlineTitle" class="offline-title"></div>
+    <button class="btn-offline" onclick="loadOffline()">▶ オフライン再生</button>
+  </div>
+
   <!-- API Key Notice -->
   <div id="apiKeyCard">
     <strong>🔑 Anthropic APIキーを入力してください</strong><br>
@@ -188,19 +621,39 @@
     </div>
   </div>
 
-  <!-- URL Input -->
-  <div class="card">
-    <div class="card-label">記事URLを入力</div>
-    <div class="url-input-wrap">
-      <input type="url" id="urlInput" placeholder="https://www.m3.com/..." />
-      <button class="btn-go" id="goBtn" onclick="handleGo()">要約 →</button>
+  <!-- Input Card with Tabs -->
+  <div class="card" id="inputCard">
+    <!-- Tab Switcher -->
+    <div class="tab-switcher">
+      <button class="tab tab-active" id="tabUrl" onclick="switchTab('url')">🔗 URL入力</button>
+      <button class="tab" id="tabText" onclick="switchTab('text')">📝 テキスト貼り付け</button>
     </div>
-    <div class="source-tags">
-      <span class="tag">m3.com</span>
-      <span class="tag">日経DI</span>
-      <span class="tag">CareNet</span>
-      <span class="tag">MedicalTribune</span>
-      <span class="tag">その他</span>
+
+    <!-- URL Mode -->
+    <div id="urlInputWrap">
+      <div class="card-label">記事URLを入力</div>
+      <div class="url-input-wrap">
+        <input type="url" id="urlInput" placeholder="https://www.m3.com/..." />
+        <button class="btn-go" id="goBtn" onclick="handleGo()">要約 →</button>
+      </div>
+      <div class="source-tags">
+        <span class="tag">m3.com</span>
+        <span class="tag">日経DI</span>
+        <span class="tag">CareNet</span>
+        <span class="tag">MedicalTribune</span>
+        <span class="tag">その他</span>
+      </div>
+    </div>
+
+    <!-- Text Mode -->
+    <div id="textInputWrap" style="display:none">
+      <div class="card-label">記事テキストを貼り付け</div>
+      <textarea
+        id="textInput"
+        class="text-paste-area"
+        placeholder="ここに記事の本文を貼り付けてください…&#10;&#10;ウェブサイトからコピーした文章、PDFのテキストなど何でもOKです。"></textarea>
+      <p class="text-hint">💡 URLが取得できない記事もテキストを直接貼り付けることで要約できます</p>
+      <button class="btn-go-full" id="goBtnText" onclick="handleGo()">要約する →</button>
     </div>
   </div>
 
@@ -210,7 +663,7 @@
   <!-- Progress -->
   <div id="progressWrap">
     <div class="progress-step" id="step1">
-      <span class="step-dot"></span> 記事を取得中…
+      <span class="step-dot"></span> <span id="step1Label">記事を取得中…</span>
     </div>
     <div class="progress-step" id="step2">
       <span class="step-dot"></span> AI が要約を生成中…
@@ -227,6 +680,19 @@
     </div>
     <div class="result-body">
       <p id="summaryText"></p>
+    </div>
+  </div>
+
+  <!-- Share Button -->
+  <button id="shareBtn" class="btn-share" onclick="createShareLink()">🔗 共有リンクを作成（スマホで音読）</button>
+
+  <!-- Share Card -->
+  <div id="shareCard" class="card" style="display:none">
+    <div class="card-label">共有リンク</div>
+    <p class="share-note">このリンクをスマホで開くと、要約が表示されて音声再生できます。オフラインでも保存して再生可能です。</p>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input type="text" id="shareUrl" class="share-url-input" readonly />
+      <button onclick="copyShareUrl(this)" class="btn-go" style="white-space:nowrap;padding:11px 16px">コピー</button>
     </div>
   </div>
 
@@ -252,7 +718,8 @@
       <button class="btn-speed" onclick="setSpeed(1.2,this)">1.2×</button>
       <button class="btn-speed" onclick="setSpeed(1.5,this)">1.5×</button>
     </div>
-    <button id="dlBtn" onclick="downloadAudio()">⬇ MP3としてダウンロード</button>
+    <div id="offlineBadge" class="offline-badge">📱 オフライン保存済み — スマホでも再生可能</div>
+    <button id="dlBtn" onclick="downloadAudio()">⬇ 要約テキストをダウンロード</button>
   </div>
 
   <!-- History -->
@@ -271,24 +738,59 @@ let speechSynthReady = false;
 let isSpeaking = false;
 let summaryForSpeech = '';
 let currentSpeed = 1.0;
-let audioBlob = null;
-let currentAudio = null;
-// Simulated progress tracking for SpeechSynthesis
 let speechProgress = 0;
 let speechTimer = null;
 let speechDuration = 0;
-let speechStartTime = 0;
+let inputMode = 'url'; // 'url' | 'text'
 
 // ── Init ──
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  // 1. Check shared URL params first
+  const params = new URLSearchParams(location.search);
+  const encoded = params.get('d');
+  if (encoded) {
+    try {
+      const json = await decodeData(encoded);
+      const { t, s } = JSON.parse(json);
+      summaryForSpeech = s;
+      document.getElementById('sharedBanner').style.display = 'block';
+      document.getElementById('inputCard').style.display = 'none';
+      showResult(t, s);
+      setupPlayer(estimateDuration(s, currentSpeed));
+      saveOffline(t, s);
+      speechSynthReady = 'speechSynthesis' in window;
+      return;
+    } catch(e) {
+      console.warn('共有リンクのデコードに失敗しました:', e);
+    }
+  }
+
+  // 2. Check offline storage
+  const offlineData = JSON.parse(localStorage.getItem('pharma_offline') || 'null');
+  if (offlineData) {
+    document.getElementById('offlineTitle').textContent = offlineData.title;
+    document.getElementById('offlineCard').style.display = 'block';
+  }
+
+  // 3. Normal init
   if (!apiKey) {
     document.getElementById('apiKeyCard').style.display = 'block';
   }
   renderHistory();
-  // test speechSynth
   speechSynthReady = 'speechSynthesis' in window;
 });
 
+// ── Tab Switcher ──
+function switchTab(mode) {
+  inputMode = mode;
+  document.getElementById('tabUrl').classList.toggle('tab-active', mode === 'url');
+  document.getElementById('tabText').classList.toggle('tab-active', mode === 'text');
+  document.getElementById('urlInputWrap').style.display = mode === 'url' ? '' : 'none';
+  document.getElementById('textInputWrap').style.display = mode === 'text' ? '' : 'none';
+  hideError();
+}
+
+// ── API Key ──
 function saveApiKey() {
   const val = document.getElementById('apiKeyInput').value.trim();
   if (!val.startsWith('sk-')) { alert('APIキーは sk- で始まります'); return; }
@@ -299,60 +801,96 @@ function saveApiKey() {
 
 // ── Main handler ──
 async function handleGo() {
-  const url = document.getElementById('urlInput').value.trim();
-  if (!url) { showError('URLを入力してください'); return; }
   if (!apiKey) { document.getElementById('apiKeyCard').style.display = 'block'; return; }
 
-  setUI('loading');
-  hideError();
+  if (inputMode === 'url') {
+    // ── URL Mode ──
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) { showError('URLを入力してください'); return; }
 
-  try {
-    // Step 1: fetch article via Claude with web search
-    setStep(1);
-    const { title, content } = await fetchArticle(url);
+    setUI('loading');
+    hideError();
+    try {
+      setStep(1);
+      document.getElementById('step1Label').textContent = '記事を取得中…';
+      const { title, content } = await fetchArticle(url);
 
-    // Step 2: summarize
-    setStep(2);
-    const summary = await summarizeArticle(url, title, content);
+      setStep(2);
+      const summary = await summarizeArticle(url, title, content);
 
-    // Step 3: TTS
-    setStep(3);
-    summaryForSpeech = summary;
-    const estDuration = estimateDuration(summary, currentSpeed);
+      setStep(3);
+      summaryForSpeech = summary;
+      setUI('done');
+      showResult(title || url, summary);
+      setupPlayer(estimateDuration(summary, currentSpeed));
+      saveHistory({ title: title || url, summary, url, date: new Date().toLocaleDateString('ja-JP') });
+      saveOffline(title || url, summary);
+    } catch(e) {
+      setUI('idle');
+      showError('エラーが発生しました：' + (e.message || e));
+    }
 
-    setUI('done');
-    showResult(title || url, summary);
-    setupPlayer(estDuration);
-    saveHistory({ title: title || url, summary, url, date: new Date().toLocaleDateString('ja-JP') });
+  } else {
+    // ── Text Mode ──
+    const text = document.getElementById('textInput').value.trim();
+    if (!text) { showError('テキストを貼り付けてください'); return; }
 
-  } catch(e) {
-    setUI('idle');
-    showError('エラーが発生しました：' + (e.message || e));
+    setUI('loading');
+    hideError();
+    // Step 1はスキップ（テキストは既に手元にある）
+    document.getElementById('step1Label').textContent = 'テキストを受け取りました ✓';
+    setStep(2); // step1を完了扱いにして step2 をアクティブに
+
+    try {
+      const title = extractTitleFromText(text);
+      const summary = await summarizeArticle('', title, text);
+
+      setStep(3);
+      summaryForSpeech = summary;
+      setUI('done');
+      showResult(title, summary);
+      setupPlayer(estimateDuration(summary, currentSpeed));
+      saveHistory({ title, summary, url: '', date: new Date().toLocaleDateString('ja-JP') });
+      saveOffline(title, summary);
+    } catch(e) {
+      setUI('idle');
+      showError('エラーが発生しました：' + (e.message || e));
+    }
   }
+}
+
+// テキストの先頭から仮タイトルを抽出
+function extractTitleFromText(text) {
+  const firstLine = text.trim().split('\n')[0].trim();
+  if (firstLine.length > 0 && firstLine.length <= 60) return firstLine;
+  if (firstLine.length > 60) return firstLine.slice(0, 55) + '…';
+  return 'テキスト入力から要約';
 }
 
 // ── Fetch article via Claude web_search ──
 async function fetchArticle(url) {
   const res = await callClaude(
     `以下のURLの記事タイトルと本文を取得してください。\nURL: ${url}\n\n結果はJSONのみで返してください（余分な文字なし）:\n{"title":"記事タイトル","content":"本文テキスト（できるだけ長く）"}`,
-    true // use web search
+    true
   );
   try {
     const cleaned = res.replace(/```json|```/g, '').trim();
     return JSON.parse(cleaned);
   } catch {
-    // fallback: treat whole response as content
     return { title: '', content: res };
   }
 }
 
 // ── Summarize ──
 async function summarizeArticle(url, title, content) {
-  const prompt = `あなたは薬剤師向けの医療・薬剤情報の専門解説者です。
-以下の記事を、移動中に音声で聴ける「約10分間の音声要約」として整理してください。
+  const sourceInfo = url
+    ? `【記事URL】${url}\n【タイトル】${title}`
+    : `【タイトル】${title}（テキスト入力）`;
 
-【記事URL】${url}
-【タイトル】${title}
+  const prompt = `あなたは薬剤師向けの医療・薬剤情報の専門解説者です。
+以下の${url ? '記事' : 'テキスト'}を、移動中に音声で聴ける「約10分間の音声要約」として整理してください。
+
+${sourceInfo}
 【本文】
 ${content.slice(0, 8000)}
 
@@ -397,12 +935,101 @@ async function callClaude(prompt, useWebSearch = false) {
   }
 
   const data = await res.json();
-  // collect all text blocks
   const text = data.content
     .filter(b => b.type === 'text')
     .map(b => b.text)
     .join('\n');
   return text;
+}
+
+// ── Share Link ──
+async function createShareLink() {
+  const title = document.getElementById('articleTitle').textContent;
+  const payload = JSON.stringify({ t: title, s: summaryForSpeech });
+  try {
+    const encoded = await encodeData(payload);
+    const url = `${location.origin}${location.pathname}?d=${encoded}`;
+    document.getElementById('shareUrl').value = url;
+    document.getElementById('shareCard').style.display = 'block';
+    document.getElementById('shareCard').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch(e) {
+    showError('共有リンクの生成に失敗しました：' + e.message);
+  }
+}
+
+async function copyShareUrl(btn) {
+  const url = document.getElementById('shareUrl').value;
+  try {
+    await navigator.clipboard.writeText(url);
+    btn.textContent = 'コピー済み ✓';
+    setTimeout(() => btn.textContent = 'コピー', 2500);
+  } catch {
+    document.getElementById('shareUrl').select();
+  }
+}
+
+// ── Encode / Decode for URL ──
+async function encodeData(str) {
+  const bytes = new TextEncoder().encode(str);
+  try {
+    // Try CompressionStream (modern browsers)
+    const cs = new CompressionStream('deflate-raw');
+    const writer = cs.writable.getWriter();
+    writer.write(bytes);
+    writer.close();
+    const buf = await new Response(cs.readable).arrayBuffer();
+    let binary = '';
+    new Uint8Array(buf).forEach(b => binary += String.fromCharCode(b));
+    return 'c.' + btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  } catch {
+    // Fallback: uncompressed UTF-8 base64
+    let binary = '';
+    bytes.forEach(b => binary += String.fromCharCode(b));
+    return 'u.' + btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  }
+}
+
+async function decodeData(encoded) {
+  const dot = encoded.indexOf('.');
+  const type = encoded.slice(0, dot);
+  const b64 = encoded.slice(dot + 1).replace(/-/g, '+').replace(/_/g, '/');
+  const pad = b64.length % 4;
+  const b64p = pad ? b64 + '='.repeat(4 - pad) : b64;
+  const binary = atob(b64p);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+
+  if (type === 'c') {
+    const ds = new DecompressionStream('deflate-raw');
+    const writer = ds.writable.getWriter();
+    writer.write(bytes);
+    writer.close();
+    const buf = await new Response(ds.readable).arrayBuffer();
+    return new TextDecoder().decode(buf);
+  } else {
+    return new TextDecoder().decode(bytes);
+  }
+}
+
+// ── Offline Storage ──
+function saveOffline(title, summary) {
+  localStorage.setItem('pharma_offline', JSON.stringify({
+    title,
+    summary,
+    savedAt: new Date().toISOString()
+  }));
+  const badge = document.getElementById('offlineBadge');
+  if (badge) badge.style.display = 'block';
+}
+
+function loadOffline() {
+  const data = JSON.parse(localStorage.getItem('pharma_offline') || 'null');
+  if (!data) return;
+  summaryForSpeech = data.summary;
+  showResult(data.title, data.summary);
+  setupPlayer(estimateDuration(data.summary, currentSpeed));
+  document.getElementById('offlineCard').style.display = 'none';
+  document.getElementById('offlineBadge').style.display = 'block';
 }
 
 // ── Speech Synthesis Player ──
@@ -440,13 +1067,11 @@ function startSpeech() {
   currentUtterance.rate = currentSpeed;
   currentUtterance.pitch = 1.0;
 
-  // Try to pick a Japanese voice
   const voices = window.speechSynthesis.getVoices();
   const jaVoice = voices.find(v => v.lang.startsWith('ja'));
   if (jaVoice) currentUtterance.voice = jaVoice;
 
   speechProgress = 0;
-  speechStartTime = Date.now();
   isSpeaking = true;
   document.getElementById('playBtn').textContent = '⏸';
 
@@ -477,17 +1102,15 @@ function startProgressTimer() {
     const pct = Math.min(elapsed / speechDuration * 100, 100);
     document.getElementById('progressBar').style.width = pct + '%';
     document.getElementById('currentTime').textContent = formatTime(elapsed);
-    if (elapsed >= speechDuration) { clearInterval(speechTimer); }
+    if (elapsed >= speechDuration) clearInterval(speechTimer);
   }, 200);
 }
 
 function seekAudio(e) {
   const rect = e.currentTarget.getBoundingClientRect();
   const pct = (e.clientX - rect.left) / rect.width;
-  // SpeechSynthesis doesn't support true seek; restart is simplest
   if (isSpeaking || currentUtterance) {
     speechProgress = pct * speechDuration;
-    // Approximate seek: split text and re-speak from ~that point
     const charIndex = Math.floor(pct * summaryForSpeech.length);
     const partial = summaryForSpeech.slice(charIndex);
     window.speechSynthesis.cancel();
@@ -505,7 +1128,6 @@ function seekAudio(e) {
     window.speechSynthesis.speak(utt);
     isSpeaking = true;
     document.getElementById('playBtn').textContent = '⏸';
-    speechStartTime = Date.now();
     startProgressTimer();
   }
 }
@@ -520,14 +1142,12 @@ function setSpeed(s, btn) {
 }
 
 function downloadAudio() {
-  // Create downloadable text file with summary (MP3 requires server-side TTS)
   const blob = new Blob([summaryForSpeech], { type: 'text/plain;charset=utf-8' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = '要約テキスト.txt';
   a.click();
-  // Show note
-  showError('※ ブラウザTTSはMP3書き出し非対応のため、要約テキストをダウンロードしました。Google TTSやVoiceVoxなどに貼り付けてMP3化できます。');
+  showError('※ ブラウザTTSはMP3書き出し非対応のため、要約テキストをダウンロードしました。Google TTSなどに貼り付けてMP3化できます。');
   document.getElementById('errorMsg').style.background = 'rgba(168,216,176,.08)';
   document.getElementById('errorMsg').style.borderColor = 'var(--accent2)';
   document.getElementById('errorMsg').style.color = 'var(--accent2)';
@@ -560,24 +1180,30 @@ function loadHistory(i) {
   summaryForSpeech = item.summary;
   showResult(item.title, item.summary);
   setupPlayer(estimateDuration(item.summary, currentSpeed));
-  document.getElementById('urlInput').value = item.url || '';
+  if (inputMode === 'url') document.getElementById('urlInput').value = item.url || '';
+  saveOffline(item.title, item.summary);
 }
 
 // ── UI helpers ──
 function setUI(state) {
   const goBtn = document.getElementById('goBtn');
+  const goBtnText = document.getElementById('goBtnText');
   const prog = document.getElementById('progressWrap');
   if (state === 'loading') {
     goBtn.disabled = true; goBtn.textContent = '処理中…';
+    goBtnText.disabled = true; goBtnText.textContent = '処理中…';
     prog.style.display = 'block';
     document.getElementById('resultCard').style.display = 'none';
     document.getElementById('playerCard').style.display = 'none';
+    document.getElementById('shareBtn').style.display = 'none';
+    document.getElementById('shareCard').style.display = 'none';
     ['step1','step2','step3'].forEach(id => {
       const el = document.getElementById(id);
       el.classList.remove('active','done');
     });
   } else {
     goBtn.disabled = false; goBtn.textContent = '要約 →';
+    goBtnText.disabled = false; goBtnText.textContent = '要約する →';
     if (state === 'done') {
       prog.style.display = 'none';
     }
@@ -597,6 +1223,8 @@ function showResult(title, summary) {
   document.getElementById('articleTitle').textContent = title;
   document.getElementById('summaryText').textContent = summary;
   document.getElementById('resultCard').style.display = 'block';
+  document.getElementById('shareBtn').style.display = 'block';
+  document.getElementById('shareCard').style.display = 'none';
 }
 
 function showError(msg) {
@@ -611,7 +1239,6 @@ function hideError() {
 }
 
 function estimateDuration(text, speed = 1.0) {
-  // Japanese TTS ~ 400 chars/min at 1x
   return Math.round((text.length / 400) * 60 / speed);
 }
 
@@ -624,7 +1251,6 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-// Load voices async
 if ('speechSynthesis' in window) {
   window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
 }
