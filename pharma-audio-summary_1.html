@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>くすり音読 — 薬剤師のための記事音声要約</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --accent: #7eb8d4;
+    --accent2: #a8d8b0;
+    --text: #e8eaf0;
+    --text-muted: #8890a8;
+    --border: #2e3348;
+    --pill: #1e2235;
+    --danger: #e07a7a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    padding: 0 0 80px;
+  }
+
+  /* ─── Header ─── */
+  header {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--surface);
+  }
+
+  .logo-icon {
+    width: 42px; height: 42px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .logo-text h1 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    letter-spacing: .03em;
+  }
+
+  .logo-text p {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-top: 1px;
+  }
+
+  /* ─── Main ─── */
+  main { padding: 24px 16px; max-width: 640px; margin: 0 auto; }
+
+  /* ─── URL Input Card ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .card-label {
+    font-size: 0.72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+
+  .url-input-wrap {
+    display: flex;
+    gap: 8px;
+  }
+
+  input[type="url"] {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    color: var(--text);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    outline: none;
+    transition: border-color .2s;
+  }
+
+  input[type="url"]:focus { border-color: var(--accent); }
+  input[type="url"]::placeholder { color: var(--text-muted); }
+
+  .btn-go {
+    background: linear-gradient(135deg, var(--accent), #5a9fc0);
+    border: none;
+    border-radius: 10px;
+    padding: 12px 18px;
+    color: #fff;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: opacity .2s, transform .1s;
+  }
+
+  .btn-go:active { transform: scale(.97); }
+  .btn-go:disabled { opacity: .4; cursor: not-allowed; }
+
+  .source-tags {
+    display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px;
+  }
+
+  .tag {
+    background: var(--pill);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+
+  /* ─── Progress ─── */
+  #progressWrap {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .progress-step {
+    display: flex; align-items: center; gap: 10px;
+    padding: 6px 0;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    transition: color .3s;
+  }
+
+  .progress-step.active { color: var(--accent); }
+  .progress-step.done { color: var(--accent2); }
+
+  .step-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    flex-shrink: 0;
+    transition: background .3s;
+  }
+
+  .progress-step.active .step-dot { background: var(--accent); animation: pulse 1s infinite; }
+  .progress-step.done .step-dot { background: var(--accent2); }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:.3; }
+  }
+
+  /* ─── Result Card ─── */
+  #resultCard {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .result-header {
+    padding: 16px 20px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+
+  .result-header h2 {
+    font-family: 'Noto Serif JP', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .result-body { padding: 20px; }
+
+  #summaryText {
+    font-size: 0.88rem;
+    line-height: 1.9;
+    color: #c8ccd8;
+    white-space: pre-wrap;
+  }
+
+  /* ─── Audio Player ─── */
+  #playerCard {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .player-label {
+    font-size: 0.72rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    margin-bottom: 14px;
+  }
+
+  .player-controls {
+    display: flex; align-items: center; gap: 14px;
+  }
+
+  .btn-play {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), #6dbf88);
+    border: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: transform .15s;
+  }
+
+  .btn-play:active { transform: scale(.93); }
+
+  .player-info { flex: 1; min-width: 0; }
+
+  .progress-bar-wrap {
+    background: var(--surface2);
+    border-radius: 4px;
+    height: 6px;
+    cursor: pointer;
+    position: relative;
+    margin-bottom: 6px;
+  }
+
+  #progressBar {
+    height: 100%;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--accent2), var(--accent));
+    width: 0%;
+    transition: width .1s linear;
+    pointer-events: none;
+  }
+
+  .time-row {
+    display: flex; justify-content: space-between;
+    font-size: 0.68rem; color: var(--text-muted);
+  }
+
+  /* Speed buttons */
+  .speed-row {
+    display: flex; gap: 6px; margin-top: 14px;
+  }
+
+  .btn-speed {
+    background: var(--pill);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all .15s;
+  }
+
+  .btn-speed.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* Download */
+  #dlBtn {
+    display: none;
+    width: 100%;
+    margin-top: 12px;
+    padding: 11px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-muted);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: border-color .2s, color .2s;
+  }
+
+  #dlBtn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Error ─── */
+  #errorMsg {
+    display: none;
+    background: rgba(224,122,122,.1);
+    border: 1px solid var(--danger);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.82rem;
+    color: var(--danger);
+    margin-bottom: 16px;
+    line-height: 1.6;
+  }
+
+  /* ─── History ─── */
+  #historySection { margin-top: 8px; }
+
+  .section-title {
+    font-size: 0.7rem;
+    letter-spacing: .1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+    padding: 0 4px;
+  }
+
+  .history-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: border-color .2s;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+
+  .history-item:hover { border-color: var(--accent); }
+
+  .history-item-title {
+    font-size: 0.82rem;
+    line-height: 1.4;
+    flex: 1; min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  .history-item-date {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    margin-left: 10px; flex-shrink: 0;
+  }
+
+  .empty-history {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    padding: 10px 4px;
+  }
+
+  /* ─── API Key Notice ─── */
+  #apiKeyCard {
+    background: rgba(126,184,212,.07);
+    border: 1px solid rgba(126,184,212,.3);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    font-size: 0.78rem;
+    color: var(--accent);
+    line-height: 1.7;
+    display: none;
+  }
+
+  .api-key-row {
+    display: flex; gap: 8px; margin-top: 10px;
+  }
+
+  #apiKeyInput {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: var(--text);
+    font-family: monospace;
+    font-size: 0.8rem;
+    outline: none;
+  }
+
+  .btn-save-key {
+    background: var(--accent);
+    border: none; border-radius: 8px;
+    padding: 8px 14px;
+    color: #fff; font-size: 0.78rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 400px) {
+    .url-input-wrap { flex-direction: column; }
+    .btn-go { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-icon">💊</div>
+  <div class="logo-text">
+    <h1>くすり音読</h1>
+    <p>薬剤師のための記事音声要約アプリ</p>
+  </div>
+</header>
+
+<main>
+
+  <!-- API Key Notice -->
+  <div id="apiKeyCard">
+    <strong>🔑 Anthropic APIキーを入力してください</strong><br>
+    記事の要約にClaude AIを使用します。<a href="https://console.anthropic.com/" target="_blank" style="color:var(--accent2)">console.anthropic.com</a> で取得できます。
+    <div class="api-key-row">
+      <input type="password" id="apiKeyInput" placeholder="sk-ant-..." />
+      <button class="btn-save-key" onclick="saveApiKey()">保存</button>
+    </div>
+  </div>
+
+  <!-- URL Input -->
+  <div class="card">
+    <div class="card-label">記事URLを入力</div>
+    <div class="url-input-wrap">
+      <input type="url" id="urlInput" placeholder="https://www.m3.com/..." />
+      <button class="btn-go" id="goBtn" onclick="handleGo()">要約 →</button>
+    </div>
+    <div class="source-tags">
+      <span class="tag">m3.com</span>
+      <span class="tag">日経DI</span>
+      <span class="tag">CareNet</span>
+      <span class="tag">MedicalTribune</span>
+      <span class="tag">その他</span>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div id="errorMsg"></div>
+
+  <!-- Progress -->
+  <div id="progressWrap">
+    <div class="progress-step" id="step1">
+      <span class="step-dot"></span> 記事を取得中…
+    </div>
+    <div class="progress-step" id="step2">
+      <span class="step-dot"></span> AI が要約を生成中…
+    </div>
+    <div class="progress-step" id="step3">
+      <span class="step-dot"></span> 音声を生成中…
+    </div>
+  </div>
+
+  <!-- Result: Summary -->
+  <div id="resultCard">
+    <div class="result-header">
+      <h2 id="articleTitle">—</h2>
+    </div>
+    <div class="result-body">
+      <p id="summaryText"></p>
+    </div>
+  </div>
+
+  <!-- Player -->
+  <div id="playerCard">
+    <div class="player-label">🎧 音声プレイヤー</div>
+    <div class="player-controls">
+      <button class="btn-play" id="playBtn" onclick="togglePlay()">▶</button>
+      <div class="player-info">
+        <div class="progress-bar-wrap" onclick="seekAudio(event)">
+          <div id="progressBar"></div>
+        </div>
+        <div class="time-row">
+          <span id="currentTime">0:00</span>
+          <span id="totalTime">--:--</span>
+        </div>
+      </div>
+    </div>
+    <div class="speed-row">
+      <span class="section-title" style="margin:0;align-self:center">速度：</span>
+      <button class="btn-speed" onclick="setSpeed(0.8,this)">0.8×</button>
+      <button class="btn-speed active" onclick="setSpeed(1.0,this)">1.0×</button>
+      <button class="btn-speed" onclick="setSpeed(1.2,this)">1.2×</button>
+      <button class="btn-speed" onclick="setSpeed(1.5,this)">1.5×</button>
+    </div>
+    <button id="dlBtn" onclick="downloadAudio()">⬇ MP3としてダウンロード</button>
+  </div>
+
+  <!-- History -->
+  <div id="historySection">
+    <div class="section-title">最近の要約</div>
+    <div id="historyList"><p class="empty-history">まだ要約した記事はありません</p></div>
+  </div>
+
+</main>
+
+<script>
+// ── State ──
+let apiKey = localStorage.getItem('pharma_api_key') || '';
+let currentUtterance = null;
+let speechSynthReady = false;
+let isSpeaking = false;
+let summaryForSpeech = '';
+let currentSpeed = 1.0;
+let audioBlob = null;
+let currentAudio = null;
+// Simulated progress tracking for SpeechSynthesis
+let speechProgress = 0;
+let speechTimer = null;
+let speechDuration = 0;
+let speechStartTime = 0;
+
+// ── Init ──
+window.addEventListener('DOMContentLoaded', () => {
+  if (!apiKey) {
+    document.getElementById('apiKeyCard').style.display = 'block';
+  }
+  renderHistory();
+  // test speechSynth
+  speechSynthReady = 'speechSynthesis' in window;
+});
+
+function saveApiKey() {
+  const val = document.getElementById('apiKeyInput').value.trim();
+  if (!val.startsWith('sk-')) { alert('APIキーは sk- で始まります'); return; }
+  apiKey = val;
+  localStorage.setItem('pharma_api_key', val);
+  document.getElementById('apiKeyCard').style.display = 'none';
+}
+
+// ── Main handler ──
+async function handleGo() {
+  const url = document.getElementById('urlInput').value.trim();
+  if (!url) { showError('URLを入力してください'); return; }
+  if (!apiKey) { document.getElementById('apiKeyCard').style.display = 'block'; return; }
+
+  setUI('loading');
+  hideError();
+
+  try {
+    // Step 1: fetch article via Claude with web search
+    setStep(1);
+    const { title, content } = await fetchArticle(url);
+
+    // Step 2: summarize
+    setStep(2);
+    const summary = await summarizeArticle(url, title, content);
+
+    // Step 3: TTS
+    setStep(3);
+    summaryForSpeech = summary;
+    const estDuration = estimateDuration(summary, currentSpeed);
+
+    setUI('done');
+    showResult(title || url, summary);
+    setupPlayer(estDuration);
+    saveHistory({ title: title || url, summary, url, date: new Date().toLocaleDateString('ja-JP') });
+
+  } catch(e) {
+    setUI('idle');
+    showError('エラーが発生しました：' + (e.message || e));
+  }
+}
+
+// ── Fetch article via Claude web_search ──
+async function fetchArticle(url) {
+  const res = await callClaude(
+    `以下のURLの記事タイトルと本文を取得してください。\nURL: ${url}\n\n結果はJSONのみで返してください（余分な文字なし）:\n{"title":"記事タイトル","content":"本文テキスト（できるだけ長く）"}`,
+    true // use web search
+  );
+  try {
+    const cleaned = res.replace(/```json|```/g, '').trim();
+    return JSON.parse(cleaned);
+  } catch {
+    // fallback: treat whole response as content
+    return { title: '', content: res };
+  }
+}
+
+// ── Summarize ──
+async function summarizeArticle(url, title, content) {
+  const prompt = `あなたは薬剤師向けの医療・薬剤情報の専門解説者です。
+以下の記事を、移動中に音声で聴ける「約10分間の音声要約」として整理してください。
+
+【記事URL】${url}
+【タイトル】${title}
+【本文】
+${content.slice(0, 8000)}
+
+---
+【要約の形式】
+- 読み上げ用の自然な日本語で書く（箇条書きNG、読み上げやすい文体）
+- 冒頭：「この記事は〜についてのまとめです」で始める
+- 構成：①トピック概要 ②主な内容・エビデンス ③薬剤師として注目すべきポイント ④まとめ
+- 文字数：約2000〜2500字（10分音声目安）
+- 専門用語には簡単な補足を入れる
+- 薬剤師の日常業務に役立つ観点で解説する`;
+
+  return await callClaude(prompt, false);
+}
+
+// ── Claude API call ──
+async function callClaude(prompt, useWebSearch = false) {
+  const body = {
+    model: 'claude-sonnet-4-6',
+    max_tokens: 3000,
+    messages: [{ role: 'user', content: prompt }]
+  };
+
+  if (useWebSearch) {
+    body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  }
+
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'anthropic-dangerous-direct-browser-access': 'true'
+    },
+    body: JSON.stringify(body)
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API Error ${res.status}`);
+  }
+
+  const data = await res.json();
+  // collect all text blocks
+  const text = data.content
+    .filter(b => b.type === 'text')
+    .map(b => b.text)
+    .join('\n');
+  return text;
+}
+
+// ── Speech Synthesis Player ──
+function setupPlayer(estDuration) {
+  speechDuration = estDuration;
+  document.getElementById('totalTime').textContent = formatTime(estDuration);
+  document.getElementById('playerCard').style.display = 'block';
+  document.getElementById('dlBtn').style.display = 'block';
+}
+
+function togglePlay() {
+  if (!speechSynthReady) { alert('このブラウザはTTSに対応していません'); return; }
+
+  if (isSpeaking) {
+    window.speechSynthesis.pause();
+    isSpeaking = false;
+    document.getElementById('playBtn').textContent = '▶';
+    clearInterval(speechTimer);
+  } else {
+    if (currentUtterance && window.speechSynthesis.paused) {
+      window.speechSynthesis.resume();
+      isSpeaking = true;
+      document.getElementById('playBtn').textContent = '⏸';
+      startProgressTimer();
+    } else {
+      startSpeech();
+    }
+  }
+}
+
+function startSpeech() {
+  window.speechSynthesis.cancel();
+  currentUtterance = new SpeechSynthesisUtterance(summaryForSpeech);
+  currentUtterance.lang = 'ja-JP';
+  currentUtterance.rate = currentSpeed;
+  currentUtterance.pitch = 1.0;
+
+  // Try to pick a Japanese voice
+  const voices = window.speechSynthesis.getVoices();
+  const jaVoice = voices.find(v => v.lang.startsWith('ja'));
+  if (jaVoice) currentUtterance.voice = jaVoice;
+
+  speechProgress = 0;
+  speechStartTime = Date.now();
+  isSpeaking = true;
+  document.getElementById('playBtn').textContent = '⏸';
+
+  currentUtterance.onend = () => {
+    isSpeaking = false;
+    document.getElementById('playBtn').textContent = '▶';
+    document.getElementById('progressBar').style.width = '100%';
+    document.getElementById('currentTime').textContent = formatTime(speechDuration);
+    clearInterval(speechTimer);
+  };
+
+  currentUtterance.onerror = () => {
+    isSpeaking = false;
+    document.getElementById('playBtn').textContent = '▶';
+    clearInterval(speechTimer);
+  };
+
+  window.speechSynthesis.speak(currentUtterance);
+  startProgressTimer();
+}
+
+function startProgressTimer() {
+  clearInterval(speechTimer);
+  const startOffset = speechProgress;
+  const timerStart = Date.now();
+  speechTimer = setInterval(() => {
+    const elapsed = (Date.now() - timerStart) / 1000 + startOffset;
+    const pct = Math.min(elapsed / speechDuration * 100, 100);
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('currentTime').textContent = formatTime(elapsed);
+    if (elapsed >= speechDuration) { clearInterval(speechTimer); }
+  }, 200);
+}
+
+function seekAudio(e) {
+  const rect = e.currentTarget.getBoundingClientRect();
+  const pct = (e.clientX - rect.left) / rect.width;
+  // SpeechSynthesis doesn't support true seek; restart is simplest
+  if (isSpeaking || currentUtterance) {
+    speechProgress = pct * speechDuration;
+    // Approximate seek: split text and re-speak from ~that point
+    const charIndex = Math.floor(pct * summaryForSpeech.length);
+    const partial = summaryForSpeech.slice(charIndex);
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(partial);
+    utt.lang = 'ja-JP'; utt.rate = currentSpeed;
+    const voices = window.speechSynthesis.getVoices();
+    const jaVoice = voices.find(v => v.lang.startsWith('ja'));
+    if (jaVoice) utt.voice = jaVoice;
+    currentUtterance = utt;
+    utt.onend = () => {
+      isSpeaking = false;
+      document.getElementById('playBtn').textContent = '▶';
+      clearInterval(speechTimer);
+    };
+    window.speechSynthesis.speak(utt);
+    isSpeaking = true;
+    document.getElementById('playBtn').textContent = '⏸';
+    speechStartTime = Date.now();
+    startProgressTimer();
+  }
+}
+
+function setSpeed(s, btn) {
+  currentSpeed = s;
+  document.querySelectorAll('.btn-speed').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (currentUtterance) currentUtterance.rate = s;
+  speechDuration = estimateDuration(summaryForSpeech, s);
+  document.getElementById('totalTime').textContent = formatTime(speechDuration);
+}
+
+function downloadAudio() {
+  // Create downloadable text file with summary (MP3 requires server-side TTS)
+  const blob = new Blob([summaryForSpeech], { type: 'text/plain;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = '要約テキスト.txt';
+  a.click();
+  // Show note
+  showError('※ ブラウザTTSはMP3書き出し非対応のため、要約テキストをダウンロードしました。Google TTSやVoiceVoxなどに貼り付けてMP3化できます。');
+  document.getElementById('errorMsg').style.background = 'rgba(168,216,176,.08)';
+  document.getElementById('errorMsg').style.borderColor = 'var(--accent2)';
+  document.getElementById('errorMsg').style.color = 'var(--accent2)';
+}
+
+// ── History ──
+function saveHistory(item) {
+  const h = JSON.parse(localStorage.getItem('pharma_history') || '[]');
+  h.unshift(item);
+  localStorage.setItem('pharma_history', JSON.stringify(h.slice(0, 10)));
+  renderHistory();
+}
+
+function renderHistory() {
+  const h = JSON.parse(localStorage.getItem('pharma_history') || '[]');
+  const el = document.getElementById('historyList');
+  if (!h.length) { el.innerHTML = '<p class="empty-history">まだ要約した記事はありません</p>'; return; }
+  el.innerHTML = h.map((item, i) => `
+    <div class="history-item" onclick="loadHistory(${i})">
+      <span class="history-item-title">${escHtml(item.title)}</span>
+      <span class="history-item-date">${item.date}</span>
+    </div>
+  `).join('');
+}
+
+function loadHistory(i) {
+  const h = JSON.parse(localStorage.getItem('pharma_history') || '[]');
+  const item = h[i];
+  if (!item) return;
+  summaryForSpeech = item.summary;
+  showResult(item.title, item.summary);
+  setupPlayer(estimateDuration(item.summary, currentSpeed));
+  document.getElementById('urlInput').value = item.url || '';
+}
+
+// ── UI helpers ──
+function setUI(state) {
+  const goBtn = document.getElementById('goBtn');
+  const prog = document.getElementById('progressWrap');
+  if (state === 'loading') {
+    goBtn.disabled = true; goBtn.textContent = '処理中…';
+    prog.style.display = 'block';
+    document.getElementById('resultCard').style.display = 'none';
+    document.getElementById('playerCard').style.display = 'none';
+    ['step1','step2','step3'].forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('active','done');
+    });
+  } else {
+    goBtn.disabled = false; goBtn.textContent = '要約 →';
+    if (state === 'done') {
+      prog.style.display = 'none';
+    }
+  }
+}
+
+function setStep(n) {
+  for (let i = 1; i < n; i++) {
+    const el = document.getElementById('step' + i);
+    el.classList.remove('active'); el.classList.add('done');
+  }
+  const cur = document.getElementById('step' + n);
+  cur.classList.add('active');
+}
+
+function showResult(title, summary) {
+  document.getElementById('articleTitle').textContent = title;
+  document.getElementById('summaryText').textContent = summary;
+  document.getElementById('resultCard').style.display = 'block';
+}
+
+function showError(msg) {
+  const el = document.getElementById('errorMsg');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+function hideError() {
+  const el = document.getElementById('errorMsg');
+  el.style.display = 'none';
+  el.style.background = ''; el.style.borderColor = ''; el.style.color = '';
+}
+
+function estimateDuration(text, speed = 1.0) {
+  // Japanese TTS ~ 400 chars/min at 1x
+  return Math.round((text.length / 400) * 60 / speed);
+}
+
+function formatTime(sec) {
+  const s = Math.floor(sec);
+  return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Load voices async
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+}
+</script>
+</body>
+</html>
